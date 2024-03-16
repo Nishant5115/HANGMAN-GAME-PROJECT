@@ -8,7 +8,9 @@ It's a fun and interactive way to challenge vocabulary and guessing skills. This
 
 Team members:
 Navya 2310990749,
+
 Aastha Sahi 2310991407,
+
 Nishant Verma 2310990753.
 
 Instructions for Playing Hangman:
