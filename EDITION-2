@@ -1,0 +1,92 @@
+import string
+import random
+import tkinter as tk
+from tkinter import messagebox
+
+class HangmanGUI:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Hangman Game")
+        self.master.geometry("500x400")
+
+        self.word_list = ["butterfly", "tiger", "elephant", "giraffe", "lion", "monkey", "eagle", "sparrow", "parrot", "owl", "penguin", "ant", "bee", "dragonfly"]
+        self.played_word = random.choice(self.word_list)
+        self.guessed_letters = set()
+        self.remaining_lives = 6
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.label = tk.Label(self.master, text="Guess the word:", font=("Arial", 20))
+        self.label.pack()
+
+        self.entry = tk.Entry(self.master, font=("Arial", 20))
+        self.entry.pack()
+
+        self.button = tk.Button(self.master, text="Guess", command=self.guess, font=("Arial", 20))
+        self.button.pack()
+
+        self.word_label = tk.Label(self.master, text=self.display_word(), font=("Arial", 20))
+        self.word_label.pack()
+
+        self.lives_label = tk.Label(self.master, text=f"You have {self.remaining_lives} guesses left.", font=("Arial", 14))
+        self.lives_label.pack()
+
+        self.hangman_label = tk.Label(self.master, text=self.draw_hangman(), font=("Arial", 14))
+        self.hangman_label.pack()
+
+    def guess(self):
+        letter = self.entry.get().lower()
+        if len(letter) == 1 and letter.isalpha() and letter not in self.guessed_letters:
+            self.guessed_letters.add(letter)
+            if letter not in self.played_word:
+                self.remaining_lives -= 1
+                self.update_ui()
+                self.check_game_status()
+                self.entry.delete(0, tk.END)
+            else:
+                messagebox.showwarning("Invalid Input", "Please enter a single alphabet character that you haven't guessed before.")
+
+
+
+    def display_word(self):
+        return " ".join(letter if letter in self.guessed_letters else '_' for letter in self.played_word)
+
+    def draw_hangman(self):
+        hangman_figures = [
+            "   O   \n   |   \n  /|\  \n  / \  ",
+            "   O   \n   |   \n  /|\  \n  /    ",
+            "   O   \n   |   \n  /|\  \n       ",
+            "   O   \n   |   \n  /|   \n       ",
+            "   O   \n   |   \n   |   \n       ",
+            "   O   \n   |   \n       \n       ",
+            "   O   \n       \n       \n       ",
+        ]
+        return hangman_figures[self.remaining_lives] if self.remaining_lives >= 0 else ""
+
+    def update_ui(self):
+        self.word_label.config(text=self.display_word())
+        self.lives_label.config(text=f"You have {self.remaining_lives} guesses left.")
+        self.hangman_label.config(text=self.draw_hangman())
+
+    def check_game_status(self):
+        if self.remaining_lives == 0:
+            messagebox.showinfo("Game Over", f"The word was: {self.played_word}\nYou lost!")
+            self.reset_game()
+        elif all(letter in self.guessed_letters for letter in self.played_word):
+            messagebox.showinfo("Congratulations", "You won!")
+            self.reset_game()
+
+    def reset_game(self):
+        self.played_word = random.choice(self.word_list)
+        self.guessed_letters = set()
+        self.remaining_lives = 6
+        self.update_ui()
+
+def main():
+    root = tk.Tk()
+    game = HangmanGUI(root)
+    root.mainloop()
+
+if __name__=="__main__":
+    main()
