@@ -7,10 +7,18 @@ class HangmanGame:
         self.master = master
         self.master.title("Hangman Game")
 
-        self.word_list = ['dog', 'cat', 'elephant', 'lion', 'tiger', 'zebra', 'giraffe','horse','rabbit', 'cheetah']
-        self.word_to_guess = random.choice(self.word_list)
-        self.hidden_word = ['_'] * len(self.word_to_guess)
-        self.guesses_left = 6
+        self.word_list = {
+            'easy': ['dog', 'cat', 'lion', 'tiger'],
+            'medium': ['elephant', 'giraffe', 'rabbit'],
+            'hard': ['zebra', 'horse', 'cheetah']
+        }
+
+        self.difficulty_level = tk.StringVar()
+        self.difficulty_level.set('easy')
+
+        self.word_to_guess = None
+        self.hidden_word = []
+        self.guesses_left = 0
         self.guesses_made = []
 
         self.font_color = "#333333"
@@ -20,25 +28,50 @@ class HangmanGame:
         self.welcome_label = tk.Label(master, text="Welcome to Hangman Game!", font=("Arial", 20), fg=self.font_color)
         self.welcome_label.pack()
 
+        self.difficulty_label = tk.Label(master, text="Select Difficulty:", font=("Arial", 14), fg=self.font_color)
+        self.difficulty_label.pack()
+
+        self.difficulty_menu = tk.OptionMenu(master, self.difficulty_level, *self.word_list.keys())
+        self.difficulty_menu.pack()
+
         self.empty_label = tk.Label(master, text="", height=2)
         self.empty_label.pack()
 
-        self.canvas = tk.Canvas(master, width=400, height=400, bg=self.canvas_color)
+        self.start_button = tk.Button(master, text='Start Game', command=self.start_game, font=("Arial", 14), bg=self.button_color, fg=self.font_color, width=10)
+        self.start_button.pack()
+
+        self.master.bind('<Return>', self.start_game)
+
+    def start_game(self, event=None):
+        difficulty = self.difficulty_level.get()
+        self.word_to_guess = random.choice(self.word_list[difficulty])
+        self.hidden_word = ['_'] * len(self.word_to_guess)
+        self.guesses_left = 6 if difficulty == 'easy' else 4 if difficulty == 'medium' else 3
+        self.guesses_made = []
+
+        self.setup_game()
+
+    def setup_game(self):
+        self.canvas = tk.Canvas(self.master, width=400, height=400, bg=self.canvas_color)
         self.canvas.pack()
 
-        self.word_display = tk.Label(master, text=' '.join(self.hidden_word), font=("Arial", 18), fg=self.font_color)
+        self.hangman_parts = []
+
+        self.canvas.create_line(15, 350, 250, 350, width=4)
+        self.canvas.create_line(50, 350, 50, 100, width=4)
+        self.canvas.create_line(15, 100, 350, 100, width=4) 
+
+        self.word_display = tk.Label(self.master, text=' '.join(self.hidden_word), font=("Arial", 18), fg=self.font_color)
         self.word_display.pack()
 
-        self.guess_label = tk.Label(master, text=f'Guesses left: {self.guesses_left}', font=("Arial", 14), fg=self.font_color)
+        self.guess_label = tk.Label(self.master, text=f'Guesses left: {self.guesses_left}', font=("Arial", 14), fg=self.font_color)
         self.guess_label.pack()
 
-        self.guess_entry = tk.Entry(master, font=("Arial", 14))
+        self.guess_entry = tk.Entry(self.master, font=("Arial", 14))
         self.guess_entry.pack()
 
-        self.guess_button = tk.Button(master, text='Guess', command=self.make_guess, font=("Arial", 14), bg=self.button_color, fg=self.font_color, width=10)
+        self.guess_button = tk.Button(self.master, text='Guess', command=self.make_guess, font=("Arial", 14), bg=self.button_color, fg=self.font_color, width=10)
         self.guess_button.pack()
-
-        self.draw_hangman()
 
         self.master.bind('<Return>', self.make_guess)
 
@@ -73,34 +106,42 @@ class HangmanGame:
         self.guess_entry.delete(0, tk.END)
 
     def draw_hangman(self):
-        parts = [
-            self.draw_head,
-            self.draw_body,
-            self.draw_left_arm,
-            self.draw_right_arm,
-            self.draw_left_leg,
-            self.draw_right_leg
-        ]
-        for i in range(6 - self.guesses_left):
-            parts[i]()
+        if self.guesses_left == 5:
+            self.draw_head()
+        elif self.guesses_left == 4:
+            self.draw_body()
+        elif self.guesses_left == 3:
+            self.draw_left_arm()
+        elif self.guesses_left == 2:
+            self.draw_right_arm()
+        elif self.guesses_left == 1:
+            self.draw_left_leg()
+        elif self.guesses_left == 0:
+            self.draw_right_leg()
 
     def draw_head(self):
         self.canvas.create_oval(150, 100, 250, 200, width=4)
+        self.hangman_parts.append('head')
 
     def draw_body(self):
         self.canvas.create_line(200, 200, 200, 300, width=4)
+        self.hangman_parts.append('body')
 
     def draw_left_arm(self):
         self.canvas.create_line(200, 230, 150, 260, width=4)
+        self.hangman_parts.append('left_arm')
 
     def draw_right_arm(self):
         self.canvas.create_line(200, 230, 250, 260, width=4)
+        self.hangman_parts.append('right_arm')
 
     def draw_left_leg(self):
         self.canvas.create_line(200, 300, 150, 350, width=4)
+        self.hangman_parts.append('left_leg')
 
     def draw_right_leg(self):
         self.canvas.create_line(200, 300, 250, 350, width=4)
+        self.hangman_parts.append('right_leg')
 
     def check_win_loss(self):
         if '_' not in self.hidden_word:
@@ -111,14 +152,18 @@ class HangmanGame:
             self.reset_game()
 
     def reset_game(self):
-        self.word_to_guess = random.choice(self.word_list)
-        self.hidden_word = ['_'] * len(self.word_to_guess)
-        self.guesses_left = 6
+        self.word_to_guess = None
+        self.hidden_word = []
+        self.guesses_left = 0
         self.guesses_made = []
-        self.word_display.config(text=' '.join(self.hidden_word))
-        self.guess_label.config(text=f'Guesses left: {self.guesses_left}')
-        self.canvas.delete('all')
-        self.draw_hangman()
+
+        self.canvas.destroy()
+        self.word_display.destroy()
+        self.guess_label.destroy()
+        self.guess_entry.destroy()
+        self.guess_button.destroy()
+
+        self.start_button.pack()
 
 def main():
     root = tk.Tk()
