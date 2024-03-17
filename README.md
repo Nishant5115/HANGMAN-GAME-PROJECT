@@ -7,11 +7,11 @@ The Hangman Game is a classic word-guessing game where one player thinks of a wo
 It's a fun and interactive way to challenge vocabulary and guessing skills. This project is a digital implementation of the traditional pen-and-paper game, allowing users to play it on a computer or mobile device.
 
 Team members:
-Navya 2310990749,
+Navya : 2310990749,
 
-Aastha Sahi 2310991407,
+Aastha Sahi: 2310991407,
 
-Nishant Verma 2310990753.
+Nishant Verma: 2310990753.
 
 Instructions for Playing Hangman:
 Objective: The objective of the game is to guess the hidden word before running out of attempts.
@@ -31,7 +31,7 @@ Winning: If you correctly guess all the letters in the word before running out o
 
 Losing: If you run out of attempts before guessing the word correctly, the game ends, and it will reveal the hidden word.
 
-Playing Again: After the game ends, you'll be asked if you want to play again. If you choose "yes," the game will start again with a new hidden word. If you choose "no," the game will end with a thank you message.
+Playing Again: After the game ends, you'll be asked if you want to play again. If you choose "yes," the game will start again with a new hidden word. If you choose "no," the game will end with a thank you message.;
 
 
 EDITION 1: EDITION-1 contains code without GUI . It is simple python code .
