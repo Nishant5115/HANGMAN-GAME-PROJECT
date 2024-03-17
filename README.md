@@ -25,13 +25,11 @@ Guessing Letters: Enter a single letter as your guess and press Enter. The game 
 Correct Guesses: If your guessed letter is in the word, it will be revealed in the appropriate position(s) in the word.
 Incorrect Guesses: If your guessed letter is not in the word, the game will deduct one attempt from your total attempts remaining.
 
-Remaining Attempts: You start with 5 attempts. Each incorrect guess reduces your attempts by 1.
+Remaining Attempts: You start with 6 attempts. Each incorrect guess reduces your attempts by 1.
 
 Winning: If you correctly guess all the letters in the word before running out of attempts, you win! The game will congratulate you and reveal the hidden word.
 
 Losing: If you run out of attempts before guessing the word correctly, the game ends, and it will reveal the hidden word.
-
-Playing Again: After the game ends, you'll be asked if you want to play again. If you choose "yes," the game will start again with a new hidden word. If you choose "no," the game will end with a thank you message.;
 
 
 EDITION 1: EDITION-1 contains code without GUI . It is simple python code. Error handling in the code is minimal, primarily focusing on checking if the user input was a single letter. It has limited replayability.
