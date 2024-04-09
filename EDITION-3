@@ -1,92 +1,161 @@
-import string
-import random
 import tkinter as tk
+import random
 from tkinter import messagebox
 
-class HangmanGUI:
+class HangmanGame:
     def __init__(self, master):
         self.master = master
         self.master.title("Hangman Game")
-        self.master.geometry("500x400")
-
-        self.master.configure(bg="lightblue")  # Set the background color here
         
-        self.word_list = ["butterfly", "tiger", "elephant", "giraffe", "lion", "monkey", "eagle", "sparrow", "parrot", "owl", "penguin", "ant", "bee", "dragonfly"]
-        self.played_word = random.choice(self.word_list)
-        self.guessed_letters = set()
-        self.remaining_lives = 6
+        self.word = ''
+        self.max_attempts = 6
+        self.attempts = 0
+        self.guessed_letters = []
 
         self.create_widgets()
+        self.new_game()
 
     def create_widgets(self):
-        self.label = tk.Label(self.master, text="Guess the word:", font=("Arial", 20), bg="lightblue")  # Set the background color here
-        self.label.pack()
+        # Configure background color
+        self.master.configure(bg='lightblue')
 
-        self.entry = tk.Entry(self.master, font=("Arial", 20))
-        self.entry.pack()
+        # Calculate window position to center it
+        window_width = 600
+        window_height = 400
+        screen_width = self.master.winfo_screenwidth()
+        screen_height = self.master.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
 
-        self.button = tk.Button(self.master, text="Guess", command=self.guess, font=("Arial", 20))
-        self.button.pack()
+        # Set window geometry
+        self.master.geometry(f'{window_width}x{window_height}+{x}+{y}')
 
-        self.word_label = tk.Label(self.master, text=self.display_word(), font=("Arial", 20), bg="lightblue")  # Set the background color here
-        self.word_label.pack()
+        # Hangman display
+        self.canvas = tk.Canvas(self.master, width=200, height=200)
+        self.canvas.grid(row=0, column=0, columnspan=3, padx=10, pady=10)
+        self.draw_hangman()
 
-        self.lives_label = tk.Label(self.master, text=f"You have {self.remaining_lives} guesses left.", font=("Arial", 14), bg="lightblue")  # Set the background color here
-        self.lives_label.pack()
+        # Word to guess
+        self.word_label = tk.Label(self.master, text="", font=('Helvetica', 24), bg='lightblue')
+        self.word_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
 
-        self.hangman_label = tk.Label(self.master, text=self.draw_hangman(), font=("Arial", 14), bg="lightblue")  # Set the background color here
-        self.hangman_label.pack()
+        # Guessed letters
+        self.guessed_label = tk.Label(self.master, text="Guessed Letters: ", font=('Helvetica', 14), bg='lightblue')
+        self.guessed_label.grid(row=2, column=0, columnspan=3, padx=10, pady=10)
 
-    def guess(self):
-        letter = self.entry.get().lower()
-        if len(letter) == 1 and letter.isalpha() and letter not in self.guessed_letters:
-            self.guessed_letters.add(letter)
-            if letter not in self.played_word:
-                self.remaining_lives -= 1
-            self.update_ui()
-            self.check_game_status()
-            self.entry.delete(0, tk.END)
-        else:
-            messagebox.showwarning("Invalid Input", "Please enter a single alphabet character that you haven't guessed before.")
+        # Difficulty levels
+        self.difficulty_label = tk.Label(self.master, text="Select Difficulty: ", font=('Helvetica', 14), bg='lightblue')
+        self.difficulty_label.grid(row=3, column=0, columnspan=3, padx=10, pady=10)
 
-    def display_word(self):
-        return " ".join(letter if letter in self.guessed_letters else '_' for letter in self.played_word)
+        self.difficulty_var = tk.StringVar()
+        self.difficulty_var.set("Easy")
+
+        self.easy_btn = tk.Radiobutton(self.master, text="Easy", variable=self.difficulty_var, value="Easy",
+                                       command=self.start_new_game, bg='lightblue')
+        self.easy_btn.grid(row=4, column=0, padx=10, pady=5)
+
+        self.medium_btn = tk.Radiobutton(self.master, text="Medium", variable=self.difficulty_var, value="Medium",
+                                         command=self.start_new_game, bg='lightblue')
+        self.medium_btn.grid(row=4, column=1, padx=10, pady=5)
+
+        self.hard_btn = tk.Radiobutton(self.master, text="Hard", variable=self.difficulty_var, value="Hard",
+                                       command=self.start_new_game, bg='lightblue')
+        self.hard_btn.grid(row=4, column=2, padx=10, pady=5)
+
+        # Guess input
+        self.guess_entry = tk.Entry(self.master, font=('Helvetica', 16))
+        self.guess_entry.grid(row=5, column=0, columnspan=3, padx=10, pady=10)
+
+        # Guess button
+        self.guess_btn = tk.Button(self.master, text="Guess", font=('Helvetica', 16), command=self.guess)
+        self.guess_btn.grid(row=6, column=0, columnspan=3, padx=10, pady=10)
+
+        # New game button
+        self.new_game_btn = tk.Button(self.master, text="New Game", font=('Helvetica', 16), command=self.new_game)
+        self.new_game_btn.grid(row=7, column=0, columnspan=3, padx=10, pady=10)
 
     def draw_hangman(self):
-        hangman_figures = [
-            "   O   \n   |   \n  /|\  \n  / \  ",
-            "   O   \n   |   \n  /|\  \n  /    ",
-            "   O   \n   |   \n  /|\  \n       ",
-            "   O   \n   |   \n  /|   \n       ",
-            "   O   \n   |   \n   |   \n       ",
-            "   O   \n   |   \n       \n       ",
-            "   O   \n       \n       \n       ",
-        ]
-        return hangman_figures[self.remaining_lives] if self.remaining_lives >= 0 else ""
+        parts = len(self.canvas.find_all())
+        if parts > 0:
+            self.canvas.delete("all")
 
-    def update_ui(self):
-        self.word_label.config(text=self.display_word())
-        self.lives_label.config(text=f"You have {self.remaining_lives} guesses left.")
-        self.hangman_label.config(text=self.draw_hangman())
+        if self.attempts >= 1:  # Head
+            self.canvas.create_oval(50, 50, 100, 100)
+        if self.attempts >= 2:  # Body
+            self.canvas.create_line(75, 100, 75, 150)
+        if self.attempts >= 3:  # Arms
+            self.canvas.create_line(75, 120, 50, 100)
+            self.canvas.create_line(75, 120, 100, 100)
+        if self.attempts >= 4:  # Legs
+            self.canvas.create_line(75, 150, 50, 200)
+        if self.attempts >= 5:  # Additional part for fully drawn hangman
+            self.canvas.create_line(75, 150, 100, 200)
+            # Inform the user that they've lost
+            messagebox.showinfo("Hangman", "You lost! The word was: " + self.word)
+            self.new_game()
 
-    def check_game_status(self):
-        if self.remaining_lives == 0:
-            messagebox.showinfo("Game Over", f"The word was: {self.played_word}\nYou lost!")
-            self.reset_game()
-        elif all(letter in self.guessed_letters for letter in self.played_word):
-            messagebox.showinfo("Congratulations", "You won!")
-            self.reset_game()
+    def choose_word(self, difficulty):
+        if difficulty == "Easy":
+            return random.choice(['china', 'india', 'japan', 'iran', 'iraq', 'chile', 'egypt'])
+        elif difficulty == "Medium":
+            return random.choice(['brazil', 'mexico', 'russia', 'turkey', 'greece', 'sweden'])
+        else:
+            return random.choice(['australia', 'argentina', 'thailand', 'singapore', 'philippines', 'portugal'])
 
-    def reset_game(self):
-        self.played_word = random.choice(self.word_list)
-        self.guessed_letters = set()
-        self.remaining_lives = 6
-        self.update_ui()
+    def display_word(self):
+        displayed_word = ''
+        for letter in self.word:
+            if letter in self.guessed_letters:
+                displayed_word += letter + ' '
+            else:
+                displayed_word += '_ '
+        self.word_label.config(text=displayed_word.strip())
+
+    def guess(self):
+        guess = self.guess_entry.get().lower()
+        self.guess_entry.delete(0, tk.END)
+
+        if len(guess) == 1 and guess.isalpha():
+            if guess in self.guessed_letters:
+                return
+            self.guessed_letters.append(guess)
+            if guess not in self.word:
+                self.attempts += 1
+                self.draw_hangman()
+
+            if self.attempts >= self.max_attempts:
+                messagebox.showinfo("Hangman", "You lost! The word was: " + self.word)
+                self.new_game()
+            else:
+                self.display_word()
+                if all(letter in self.guessed_letters for letter in self.word):
+                    messagebox.showinfo("Hangman", "Congratulations! You won!")
+                    self.new_game()
+        else:
+            messagebox.showwarning("Hangman", "Please enter a single letter.")
+
+        self.guessed_label.config(text="Guessed Letters: " + ', '.join(self.guessed_letters))
+
+        if not guess.isalpha():
+            messagebox.showwarning("Hangman", "Please enter a letter from A to Z.")
+
+    def new_game(self):
+        self.attempts = 0
+        self.guessed_letters = []
+        self.word = self.choose_word(self.difficulty_var.get())
+        self.display_word()
+        self.draw_hangman()
+        self.guessed_label.config(text="Guessed Letters: ")
+
+    def start_new_game(self):
+        self.new_game()
+
 
 def main():
     root = tk.Tk()
-    game = HangmanGUI(root)
+    hangman_game = HangmanGame(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()
