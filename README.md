@@ -7,11 +7,11 @@ The Hangman Game is a classic word-guessing game where one player thinks of a wo
 It's a fun and interactive way to challenge vocabulary and guessing skills. This project is a digital implementation of the traditional pen-and-paper game, allowing users to play it on a computer or mobile device.
 
 Team members:
-Navya : 2310990749,
+Navya : 2310990749
 
-Aastha Sahi: 2310991407,
+Nishant Verma: 2310990753
 
-Nishant Verma: 2310990753.
+Aastha Sahi: 2310991407
 
 Instructions for Playing Hangman:
 Objective: The objective of the game is to guess the hidden word before running out of attempts.
